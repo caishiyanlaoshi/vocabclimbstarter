@@ -83,7 +83,7 @@ body{
   position:absolute; bottom:0;
   width:78px; height:78px; margin-left:-39px;
   background-image:url("climber.png");
-  background-size:600% 100%;      /* 6 格并排 · a 6-frame strip */
+  background-size:100% 100%;      /* 单张静态图 · a single static image */
   background-position-x:0%;
   image-rendering:auto;
   filter:drop-shadow(0 6px 6px rgba(0,0,0,.5));
@@ -423,7 +423,7 @@ function choose(button, def){
 }
 
 /* --- 攀爬 · the climb ------------------------------------- */
-function setFrame(i){ climber.style.backgroundPositionX = (i * 20) + '%'; }
+function setFrame(i){ /* 简化版只有一张图，不用切格 · simplified version has one image, no frames to switch */ }
 
 /* 第 i 个石台在这张表里的第几个 · which shelf in the list ledge i is */
 const ledgeAt = i => WALL_LEDGES[((i % WALL_LEDGES.length) + WALL_LEDGES.length) % WALL_LEDGES.length];
