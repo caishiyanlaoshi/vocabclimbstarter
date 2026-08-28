@@ -29,6 +29,10 @@ const VOCAB = [
   { word: "锲而不舍", def: "一直刻下去不放手，比喻有恒心、不放弃" },
   { word: "南辕北辙", def: "行动和目的正好相反，永远到不了" },
   { word: "举一反三", def: "从一件事类推，懂得其他许多事" },
+  { word: "心旷神怡", def: "心情舒畅，精神愉快" },
+  { word: "情况", def: "事情在某个时候呈现出来的状态" },
+  { word: "无助", def: "遇到困难时得不到别人的帮助，感到孤立无援" },
+  { word: "互助互利", def: "彼此帮助，彼此得到好处" },
   // ↑ 照上面的格式往下加就行。别忘了行尾的逗号。
   // ↑ Add more in the same format. Don't forget the comma at the end of each line.
 ];
