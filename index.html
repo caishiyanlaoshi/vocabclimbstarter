@@ -659,6 +659,12 @@ try {
     // 转屏或改窗口大小，山壁的尺寸就变了，得重新算一次落点
     // Rotating the phone resizes the wall, so the landing spots have to be redone
     window.addEventListener('resize', place);
+    // 手机浏览器收起/展开网址栏时，有些机型不会触发上面那个 resize，
+    // 用 visualViewport 再保险一次，免得人物的位置跟山壁对不上。
+    // Some mobile browsers don't fire the resize above when the address bar
+    // shows or hides, so also listen on visualViewport as a backup.
+    if (window.visualViewport)
+      window.visualViewport.addEventListener('resize', place);
     // 电脑上可以直接按 1 2 3 4 作答 · keys 1–4 work on a laptop
     document.addEventListener('keydown', e => {
       const i = '1234'.indexOf(e.key);
