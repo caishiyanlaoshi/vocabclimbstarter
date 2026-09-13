@@ -82,7 +82,8 @@ body{
 .climber{
   position:absolute; bottom:0;
   width:78px; height:78px; margin-left:-39px;
-  background-image:url("climber.png");
+  /* 图片由程序依照选的角色来设定，见下面的 CHARACTERS · image is set by
+     script based on the chosen character, see CHARACTERS below */
   background-size:600% 100%;      /* 6 格并排 · a 6-frame strip */
   background-position-x:0%;
   image-rendering:auto;
@@ -130,8 +131,13 @@ body{
 }
 
 .word{
-  text-align:center; font-size:clamp(1.7rem,7vw,2.3rem); font-weight:700;
-  letter-spacing:.14em; color:var(--gold); margin-bottom:12px;
+  text-align:center; font-size:clamp(1.05rem,4.6vw,1.35rem); font-weight:600;
+  letter-spacing:.03em; line-height:1.7; color:var(--cream); margin-bottom:14px;
+}
+.word .blank{
+  display:inline-block; min-width:2.6em; margin:0 .1em;
+  border-bottom:2px solid var(--gold); color:var(--gold);
+  text-align:center;
 }
 
 .options{ display:flex; flex-direction:column; gap:8px; }
@@ -140,14 +146,17 @@ body{
   line-height:1.45; color:var(--cream); cursor:pointer;
   background:var(--stone); border:1px solid rgba(246,239,226,.16);
   border-radius:11px; padding:11px 13px;
-  display:flex; gap:10px; align-items:flex-start;
+  display:flex; gap:10px; align-items:center;
   transition:background .12s, border-color .12s;
 }
 .options button .n{
   flex:0 0 auto; width:1.35em; height:1.35em; border-radius:50%;
   background:rgba(224,168,60,.2); color:var(--gold);
-  font-size:.8em; display:grid; place-items:center; margin-top:.15em;
+  font-size:.8em; display:grid; place-items:center;
 }
+.options button .txt{ display:flex; flex-direction:column; gap:1px; }
+.options button .txt .w{ font-weight:700; letter-spacing:.06em; }
+.options button .txt .p{ font-size:.75em; opacity:.65; letter-spacing:.04em; }
 .options button:hover{ background:#3a3126; }
 .options button.right{ background:var(--green); border-color:var(--green); }
 .options button.wrong{ background:var(--red);   border-color:var(--red);   }
@@ -169,6 +178,45 @@ body{
   background:var(--gold); color:#20180a; border:none;
 }
 .screen .fine{ font-size:.78rem; opacity:.6; letter-spacing:.04em; }
+
+/* 开局选角色 · character picker on the start screen */
+.picker{ display:flex; gap:16px; }
+.picker .opt{
+  cursor:pointer; padding:10px 10px 12px; border-radius:16px;
+  background:rgba(255,255,255,.05); border:2px solid rgba(246,239,226,.18);
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  transition:border-color .15s, background .15s, transform .15s;
+}
+.picker .opt:hover{ background:rgba(255,255,255,.09); }
+.picker .opt.sel{ border-color:var(--gold); background:rgba(224,168,60,.14); transform:translateY(-2px); }
+.picker .avatar{
+  width:64px; height:64px; border-radius:50%;
+  background-color:rgba(0,0,0,.2);
+  background-size:600% 100%; background-position-x:0%; background-repeat:no-repeat;
+  background-position-y:8px;
+}
+.picker span{ font-size:.85rem; letter-spacing:.06em; opacity:.85; }
+
+/* 复习清单：答错的词语 · review list of missed words */
+.review{
+  width:100%; max-width:26em; text-align:left;
+  max-height:34vh; overflow-y:auto;
+  background:rgba(0,0,0,.28); border:1px solid rgba(224,168,60,.25);
+  border-radius:12px; padding:4px 6px;
+}
+.review:empty{ display:none; }
+.review .head{
+  font-size:.8rem; opacity:.75; letter-spacing:.06em;
+  padding:8px 10px 4px;
+}
+.review .item{
+  display:flex; align-items:baseline; gap:8px;
+  padding:8px 10px; border-top:1px solid rgba(246,239,226,.1);
+}
+.review .item:first-of-type{ border-top:none; }
+.review .item .w{ font-weight:700; color:var(--gold); font-size:1.02rem; white-space:nowrap; }
+.review .item .p{ font-size:.75rem; opacity:.6; white-space:nowrap; }
+.review .item .d{ font-size:.82rem; opacity:.85; line-height:1.4; }
 
 /* 出错画面的字要左对齐才读得清楚 · errors read better left-aligned */
 #errScreen{ background:#2a1512; }
@@ -203,7 +251,7 @@ body{
     border:1px solid rgba(224,168,60,.22); border-top:2px solid rgba(224,168,60,.35);
     border-radius:18px; box-shadow:0 24px 60px rgba(0,0,0,.5);
   }
-  .word{ font-size:2.6rem; margin-bottom:20px; }
+  .word{ font-size:1.5rem; margin-bottom:20px; }
   .options{ gap:11px; }
   .options button{ font-size:1.05rem; padding:14px 16px; }
   .hud b{ font-size:1.5rem; }
@@ -241,6 +289,16 @@ body{
   <div class="screen on" id="startScreen">
     <h1>攀山快答</h1>
     <p id="startInfo"></p>
+    <div class="picker" id="picker">
+      <div class="opt sel" data-char="girl">
+        <div class="avatar" id="avatarGirl"></div>
+        <span>女生</span>
+      </div>
+      <div class="opt" data-char="boy">
+        <div class="avatar" id="avatarBoy"></div>
+        <span>男生</span>
+      </div>
+    </div>
     <button id="startBtn">开始攀登</button>
     <p class="fine">答对往上爬一格 · 答错扣三秒</p>
   </div>
@@ -250,6 +308,7 @@ body{
     <h1>登顶了</h1>
     <div class="big"><span id="finalAlt">0</span> 米</div>
     <p>答对 <b id="finalScore">0</b> 题</p>
+    <div class="review" id="reviewBox"></div>
     <button id="againBtn">再爬一次</button>
   </div>
 
@@ -289,6 +348,13 @@ const PENALTY_MS = 3000;  // 答错扣多少毫秒
 const FOOT_TRIM  = 3;     // 图里猴子的脚离图片底边还有这么几个点
                           // the sprite's feet sit this many px above its own bottom edge
 
+// 可以选的角色，每个都是一张 6 格并排的图 · selectable characters, each a 6-frame strip
+const CHARACTERS = {
+  girl: "climber-girl.png",
+  boy:  "climber-boy.png"
+};
+let chosenChar = "girl";   // 学生选的角色，默认女生 · the student's pick, defaults to girl
+
 /* 山壁图上那些石台的位置，从下往上排。x 是石台中心，y 是石台上表面，
    两个都是「占整张图的几分之几」，所以换成别的尺寸也不用改。
    一张图用完就接下一张（山壁是上下无缝重复的），所以这张表就够爬到顶。
@@ -317,6 +383,7 @@ let altitude = 0, score = 0, deadline = 0;
 let running = false, locked = false;
 let tickId = null, animId = null;
 let answer = null, recent = [];
+let missed = [];   // 这一局答错过的词语（去重）· words gotten wrong this run, deduped
 
 /* --- 检查老师填的词语表 · check the teacher's word list ---- */
 function findProblem(){
@@ -339,12 +406,17 @@ function findProblem(){
     return '词语太少了。<br>现在只有 <b>' + VOCAB.length + '</b> 个，至少要 <b>4</b> 个才出得了四个选项（建议 8 个以上）。';
   for (let i = 0; i < VOCAB.length; i++){
     const v = VOCAB[i];
-    if (!v || typeof v.word !== 'string' || typeof v.def !== 'string' || !v.word.trim() || !v.def.trim())
-      return '第 <b>' + (i + 1) + '</b> 个词语写得不完整。<br>每一行都要长这样：<br><code>{ word: "词语", def: "释义" },</code>';
+    if (!v || typeof v.word !== 'string' || typeof v.def !== 'string' || typeof v.sentence !== 'string' ||
+        !v.word.trim() || !v.def.trim() || !v.sentence.trim())
+      return '第 <b>' + (i + 1) + '</b> 个词语写得不完整。<br>每一行都要长这样：<br>' +
+             '<code>{ word: "词语", pinyin: "拼音", sentence: "带 ___ 的句子", def: "释义" },</code>';
+    if (v.sentence.indexOf('___') === -1)
+      return '第 <b>' + (i + 1) + '</b> 个词语的例句里找不到填空记号。<br>句子里要有三个底线 <code>___</code>，代表要挖空的地方，例如：<br>' +
+             '<code>"妈妈早上喜欢去公园___身体。"</code>';
   }
-  const distinct = new Set(VOCAB.map(v => v.def.trim()));
-  if (distinct.size < 4)
-    return '不一样的释义只有 <b>' + distinct.size + '</b> 个。<br>四个选项凑不齐，请让至少 4 个词语的释义各不相同。';
+  const distinctWords = new Set(VOCAB.map(v => v.word.trim()));
+  if (distinctWords.size < 4)
+    return '不一样的词语只有 <b>' + distinctWords.size + '</b> 个。<br>四个选项凑不齐，请让至少 4 个词语各不相同。';
   if (typeof SECONDS === 'undefined' || !(Number(SECONDS) > 0))
     return '<code>SECONDS</code>（每局几秒）不见了，或者不是一个数字。<br>请确认有这么一行：<br><code>const SECONDS = 90;</code>';
   if (typeof UNIT_NAME === 'undefined')
@@ -375,23 +447,28 @@ function nextQuestion(){
   recent.push(answer.word);
   if (recent.length > Math.min(5, VOCAB.length - 1)) recent.shift();
 
-  // 干扰项是从别的词语的释义里抓的，老师不必自己写错误答案
+  // 干扰项是从别的词语里抓的，老师不必自己写错误答案
   // Distractors come from other entries, so teachers never write wrong answers
   const others = [];
   for (const v of shuffle(VOCAB.slice())){
-    const d = v.def.trim();
-    if (d === answer.def.trim() || others.includes(d)) continue;
-    others.push(d);
+    if (v.word.trim() === answer.word.trim() || others.some(o => o.word === v.word)) continue;
+    others.push(v);
     if (others.length === 3) break;
   }
 
-  $('word').textContent = answer.word;
+  // 把句子里的 ___ 换成一段挖空的样式 · turn the ___ marker into a styled blank
+  const parts = answer.sentence.split('___');
+  $('word').innerHTML = parts.map(escapeHtml).join('<span class="blank">&nbsp;</span>');
+
   const box = $('options');
   box.innerHTML = '';
-  shuffle([answer.def, ...others]).forEach((def, i) => {
+  shuffle([answer, ...others]).forEach((v, i) => {
     const b = document.createElement('button');
-    b.innerHTML = '<span class="n">' + (i + 1) + '</span><span>' + escapeHtml(def) + '</span>';
-    b.onclick = () => choose(b, def);
+    b.innerHTML = '<span class="n">' + (i + 1) + '</span>' +
+                  '<span class="txt"><span class="w">' + escapeHtml(v.word) + '</span>' +
+                  (v.pinyin ? '<span class="p">' + escapeHtml(v.pinyin) + '</span>' : '') +
+                  '</span>';
+    b.onclick = () => choose(b, v.word);
     box.appendChild(b);
   });
 }
@@ -401,11 +478,11 @@ function escapeHtml(s){
 }
 
 /* --- 答题 · answering ------------------------------------- */
-function choose(button, def){
+function choose(button, word){
   if (!running || locked) return;
   locked = true;
 
-  if (def.trim() === answer.def.trim()){
+  if (word.trim() === answer.word.trim()){
     button.classList.add('right');
     score++; $('score').textContent = score;
     ascend();
@@ -414,6 +491,7 @@ function choose(button, def){
     deadline -= PENALTY_MS;
     panel.classList.add('shake');
     setTimeout(() => panel.classList.remove('shake'), 340);
+    if (!missed.some(v => v.word === answer.word)) missed.push(answer);
   }
 
   setTimeout(() => {
@@ -492,9 +570,11 @@ function ascend(){
 
 /* --- 一局的开始与结束 · run start & end ------------------- */
 function startRun(){
-  altitude = 0; score = 0; recent = [];
+  altitude = 0; score = 0; recent = []; missed = [];
   running = true; locked = false;
   deadline = performance.now() + Number(SECONDS) * 1000;
+
+  climber.style.backgroundImage = 'url("' + CHARACTERS[chosenChar] + '")';
 
   $('alt').textContent = '0';
   $('score').textContent = '0';
@@ -507,6 +587,7 @@ function startRun(){
 
   $('startScreen').classList.remove('on');
   $('endScreen').classList.remove('on');
+  $('reviewBox').innerHTML = '';
 
   nextQuestion();
   clearInterval(tickId);
@@ -528,7 +609,24 @@ function endRun(){
   setFrame(5);                       // 举手庆祝 · the celebrate frame
   $('finalAlt').textContent = altitude;
   $('finalScore').textContent = score;
+  renderReview();
   $('endScreen').classList.add('on');
+}
+
+/* 答错的词语清单：一个词语只列一次，就算答错了好几遍
+   The missed-word list: each word appears once even if missed more than once */
+function renderReview(){
+  const box = $('reviewBox');
+  if (!missed.length){ box.innerHTML = ''; return; }
+  let html = '<div class="head">这几个词语，可以再复习一下：</div>';
+  missed.forEach(v => {
+    html += '<div class="item">' +
+              '<span class="w">' + escapeHtml(v.word) + '</span>' +
+              (v.pinyin ? '<span class="p">' + escapeHtml(v.pinyin) + '</span>' : '') +
+              '<span class="d">' + escapeHtml(v.def) + '</span>' +
+            '</div>';
+  });
+  box.innerHTML = html;
 }
 
 /* --- 启动 · boot ------------------------------------------ */
@@ -541,6 +639,20 @@ try {
       '<b>' + escapeHtml(UNIT_NAME) + '</b><br>' +
       VOCAB.length + ' 个词语 · ' + Number(SECONDS) + ' 秒';
     place();
+
+    // 头像预览：跟人物一样，第一格（站立）当头像 · avatar preview uses frame 1 (standing)
+    $('avatarGirl').style.backgroundImage = 'url("' + CHARACTERS.girl + '")';
+    $('avatarBoy').style.backgroundImage  = 'url("' + CHARACTERS.boy  + '")';
+
+    // 选角色 · pick a character
+    document.querySelectorAll('#picker .opt').forEach(opt => {
+      opt.onclick = () => {
+        document.querySelectorAll('#picker .opt').forEach(o => o.classList.remove('sel'));
+        opt.classList.add('sel');
+        chosenChar = opt.dataset.char;
+      };
+    });
+
     $('startBtn').onclick = startRun;
     $('againBtn').onclick = startRun;
     setFrame(0);
